@@ -4,63 +4,116 @@
 
 #include "camera.h"
 #include "gui.h"
+// #include "raytracer.h"
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
 
-    Camera camera({0, 0, (10-1e-4)});
-    glm::dvec3 light{0, 10-1e-4, 0};
+    Camera camera({278, 273, -800}, {278, 273, 0});
 
-    RayTracer raytracer(camera, light);
+    Material* DIFFUSE_LIGHT = new Material({0.05, 0.05, 0.05}, {1.0, 1.0, 1.0}, {1.0, 1.0, 1.0},
+                                          0.22, 0, 0, 1.0, 2.0);
+    
+    // std::vector<Quad*> area_light;
+
+    // Quad* area_light_back = new Quad({213.0, 528.8, 332.0}, {213.0, 548.8, 332.0}, {343.0, 548.8, 332.0}, {343.0, 528.8, 332.0}, DIFFUSE_LIGHT);
+    // Quad* area_light_left = new Quad({343.0, 528.8, 332.0}, {343.0, 548.8, 332.0}, {343.0, 548.8, 227.0}, {343.0, 528.8, 227.0}, DIFFUSE_LIGHT);
+    // Quad* area_light_front = new Quad({343.0, 528.8, 227.0}, {343.0, 548.8, 227.0}, {213.0, 548.8, 227.0}, {213.0, 528.8, 227.0}, DIFFUSE_LIGHT);
+    // Quad* area_light_right = new Quad({213.0, 528.8, 227.0}, {213.0, 548.8, 227.0}, {213.0, 548.8, 332.0}, {213.0, 528.8, 332.0}, DIFFUSE_LIGHT);
+    Quad* area_light_bottom = new Quad({343.0, 548.8, 332.0}, {343.0, 548.8, 227.0}, {213.0, 548.8, 227.0}, {213.0, 548.8, 332.0}, DIFFUSE_LIGHT);
+    
+    // area_light.push_back(area_light_back);
+    // area_light.push_back(area_light_left);
+    // area_light.push_back(area_light_right);
+    // area_light.push_back(area_light_back);
+    // area_light.push_back(area_light_front);
+
+    
+    RayTracer raytracer(camera, area_light_bottom);
 
     // Set up scene
-    Octree scene({-20, -10, -20}, {20, 10, 20});
+    Octree scene({-600, -600, -600}, {600, 600, 600});
     // TODO Add objects to the scene
     // scene.push_back(...);
 
-    Sphere* sphere_1 = new Sphere(3.0, {-3, -7, -5}, Material({0.0215,  0.1745,  0.0215}));
+    Material* DIFFUSE_WHITE = new Material({0.05, 0.05, 0.05}, {0.9, 0.7, 0.4}, {0.9, 0.7, 0.4},
+                                          0.0, 0.0, 0, 1.0, 0.0);
+    Material* DIFFUSE_RED = new Material({0.05, 0, 0}, {0.76, 0.0, 0.0}, {1.0, 0.0, 0.0},
+                                          0.0, 0.0, 0, 1.0, 0.0);
+    Material* DIFFUSE_GREEN = new Material({0, 0.05, 0}, {0.11, 0.38, 0.04}, {0.0, 1.0, 0.0},
+                                            0.0, 0.0, 0, 1.0, 0.0);
+    Material* REFLECTED = new Material({0.2125, 0.1275, 0.054}, {0.714, 0.4284, 0.18144}, {0.393548, 0.271906, 0.166721},
+                                        0.99, 0.0, 0, 1.0, 0.0);
+    Material* REFLECTED_CEIL = new Material({0.05, 0.05, 0.05}, {0.2, 0.2, 0.2}, {0.2, 0.2, 0.2},
+                                            1.0, 0.0, 0, 1.0, 0.0);
+                                    
+
+    Sphere* sphere_1 = new Sphere(83.0, {425.0, 83.0, 100.0}, REFLECTED);
     
     // front wall
-    Triangle* tri_1 = new Triangle({-20, -10, -20}, {-20, 10, -20}, {20, -10, -20}, Material({0.75, 0.75, 0.75}));
-    Triangle* tri_2 = new Triangle({20, 10, -20}, {20, -10, -20}, {-20, 10, -20}, Material({0.75, 0.75, 0.75}));
+    Quad* front_wall = new Quad({549.6, 0.0, 559.2}, {556.0, 548.8, 559.2}, {0, 548.8, 559.2}, {0, 0, 559.2}, DIFFUSE_WHITE);
 
     // left wall
-    Triangle* tri_3 = new Triangle({-20, -10, 20}, {-20, 10, 20}, {-20, -10, -20}, Material({0.75, 0., 0.}));
-    Triangle* tri_4 = new Triangle({-20, 10, -20}, {-20, -10, -20}, {-20, 10, 20}, Material({0.75, 0., 0.}));
+    Quad* left_wall = new Quad({552.8, 0, 0}, {556.0, 548.8, 0}, {556.0, 548.8, 559.2}, {549.6, 0.0, 559.2}, DIFFUSE_RED);
     
     // right wall
-    Triangle* tri_5 = new Triangle({20, -10, -20}, {20, 10, -20}, {20, -10, 20}, Material({0., 0.75, 0.}));
-    Triangle* tri_6 = new Triangle({20, 10, 20}, {20, -10, 20}, {20, 10, -20}, Material({0., 0.75, 0.}));
+    Quad* right_wall = new Quad({0, 0, 559.2}, {0, 548.8, 559.2}, {0, 548.8, 0}, {0, 0, 0}, DIFFUSE_GREEN);
 
     // ceiling
-    Triangle* tri_7 = new Triangle({-20, 10, -20}, {-20, 10, 20}, {20, 10, -20}, Material({0.75, 0.75, 0.75}));
-    Triangle* tri_8 = new Triangle({20, 10, 20}, {20, 10, -20}, {-20, 10, 20}, Material({0.75, 0.75, 0.75}));
+    Quad* ceiling = new Quad({556.0, 548.8, 559.2}, {556.0, 548.8, 0}, {0, 548.8, 0}, {0, 548.8, 559.2}, REFLECTED_CEIL);
 
     // floor
-    Triangle* tri_9 = new Triangle({-20, -10, 20}, {-20, -10, -20}, {20, -10, 20}, Material({0.75, 0.75, 0.75}));
-    Triangle* tri_10 = new Triangle({20, -10, -20}, {20, -10, 20}, {-20, -10, -20}, Material({0.75, 0.75, 0.75}));
+    Quad* floor = new Quad({552.8, 0, 0}, {549.6, 0, 559.2}, {0, 0, 559.2}, {0, 0, 0}, DIFFUSE_WHITE);
 
-    // back wall
-    Triangle* tri_11 = new Triangle({20, -20, 20}, {20, 20, 20}, {-20, -20, 20}, Material({0.25, 0.20725, 0.20725}));
-    Triangle* tri_12 = new Triangle({-20, 20, 20}, {-20, -20, 20}, {20, 20, 20}, Material({0.25, 0.20725, 0.20725}));
+    
+    // tall block
+    Quad* tall_block_left = new Quad({472.0, 0.0, 406.0}, {472.0, 330.0, 406.0}, {423.0, 330.0, 247.0}, {423.0, 0.0, 247.0}, DIFFUSE_WHITE);
+    Quad* tall_block_back = new Quad({314.0, 0.0, 456.0}, {314.0, 330.0, 456.0}, {472.0, 330.0, 406.0}, {472.0, 0.0, 406.0}, DIFFUSE_WHITE);
+    Quad* tall_block_right = new Quad({265.0, 0.0, 296.0}, {265.0, 330.0, 296.0}, {314.0, 330.0, 456.0}, {314.0, 0, 456.0}, DIFFUSE_WHITE);
+    Quad* tall_block_front = new Quad({423.0, 0.0, 247.0}, {423.0, 330.0, 247.0}, {265.0, 330.0, 296.0}, {265.0, 0.0, 296.0}, DIFFUSE_WHITE);
+    Quad* tall_block_top = new Quad({423.0, 330.0, 247.0}, {472.0, 330.0, 406.0}, {314.0, 330.0, 456.0}, {265.0, 330.0, 296.0}, DIFFUSE_WHITE);
+
+
+    Quad* short_block_left = new Quad({240.0, 0.0, 272.0}, {240.0, 165.0, 272.0}, {290.0, 165.0, 114.0}, {290.0, 0.0, 114.0}, DIFFUSE_WHITE);
+    Quad* short_block_back = new Quad({82.0, 0.0, 225.0}, {82.0, 165.0, 225.0}, {240.0, 165.0, 272.0}, {240.0, 0.0, 272.0}, DIFFUSE_WHITE);
+    Quad* short_block_right = new Quad({130.0, 0.0, 65.0}, {130.0, 165.0, 65.0}, {82.0, 165.0, 225.0}, {82.0, 0, 225.0}, DIFFUSE_WHITE);
+    Quad* short_block_front = new Quad({290.0, 0.0, 114.0}, {290.0, 165.0, 114.0}, {130.0, 165.0, 65.0}, {130.0, 0.0, 65.0}, DIFFUSE_WHITE);
+    Quad* short_block_top = new Quad({290.0, 165.0, 114.0}, {240.0, 165.0, 272.0}, {82.0, 165.0, 225.0}, {130.0, 165.0, 65.0}, DIFFUSE_WHITE);
+    
+    
+    // scene.push_back(sphere_1);
+    scene.push_back(front_wall);
+    scene.push_back(left_wall);
+    scene.push_back(right_wall);
+    scene.push_back(ceiling);
+    scene.push_back(floor);
+    
+    // scene.push_back(area_light_left);
+    // scene.push_back(area_light_right);
+    scene.push_back(area_light_bottom);
+    // scene.push_back(area_light_back);
+    // scene.push_back(area_light_front);
+    
+    scene.push_back(tall_block_left);
+    scene.push_back(tall_block_back);
+    scene.push_back(tall_block_right);
+    scene.push_back(tall_block_front);
+    scene.push_back(tall_block_top);
+
+    scene.push_back(short_block_left);
+    scene.push_back(short_block_back);
+    scene.push_back(short_block_right);
+    scene.push_back(short_block_front);
+    scene.push_back(short_block_top);
 
     scene.push_back(sphere_1);
-    scene.push_back(tri_1);
-    scene.push_back(tri_2);
-    scene.push_back(tri_3);
-    scene.push_back(tri_4);
-    scene.push_back(tri_5);
-    scene.push_back(tri_6);
-    scene.push_back(tri_7);
-    scene.push_back(tri_8);
-    scene.push_back(tri_9);
-    scene.push_back(tri_10);
-    scene.push_back(tri_11);
-    scene.push_back(tri_12);
+
+
 
     raytracer.setScene(&scene);
 
     Gui window(500, 500, raytracer);
+    // Gui window(300, 300, raytracer);
     window.show();
     return app.exec();
 }

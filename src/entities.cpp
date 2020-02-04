@@ -1,4 +1,5 @@
 #include "../include/entities.h"
+
 #define OFFSET 1e-5
 
 bool Sphere::intersect(const Ray& ray, glm::dvec3& intersect, glm::dvec3& normal) const {
@@ -30,6 +31,10 @@ bool Sphere::intersect(const Ray& ray, glm::dvec3& intersect, glm::dvec3& normal
     }
     return false;
 };
+
+// BoundingBox Sphere::boundingBox() const {
+//     return BoundingBox(pos - glm::dvec3(radius, radius, radius), pos + glm::dvec3(radius, radius, radius));
+// };
 
 
 bool Triangle::intersect(const Ray& ray, glm::dvec3& intersect, glm::dvec3& normal) const {
@@ -63,3 +68,44 @@ bool Triangle::intersect(const Ray& ray, glm::dvec3& intersect, glm::dvec3& norm
 
     return true;
 };
+
+// BoundingBox Triangle::boundingBox() const {
+//     glm::dvec3 min, max;
+//     min = {std::min(_v0[0], _v1[0]), std::min(_v0[1], _v1[1]), std::min(_v0[2], _v1[2])};
+//     min = {std::min(min[0], _v2[0]), std::min(min[1], _v2[1]), std::min(min[2], _v2[2])};
+
+//     max = {std::max(_v0[0], _v1[0]), std::max(_v0[1], _v1[1]), std::max(_v0[2], _v1[2])};
+//     max = {std::max(max[0], _v2[0]), std::max(max[1], _v2[1]), std::max(max[2], _v2[2])};
+    
+//     if (min.x == max.x) { min.x -= OFFSET; max.x += OFFSET; }
+//     if (min.y == max.y) { min.y -= OFFSET; max.y += OFFSET; }
+//     if (min.z == max.z) { min.z -= OFFSET; max.z += OFFSET; }
+    
+//     return BoundingBox(min, max);
+// };
+
+
+bool Quad::intersect(const Ray& ray, glm::dvec3& intersect, glm::dvec3& normal) const {
+    for (int i = 0; i < _objectlist.size(); ++i) {
+        if (_objectlist[i]->intersect(ray, intersect, normal)) {
+            return true;
+        }
+    }
+    return false;
+};
+
+// BoundingBox Quad::boundingBox() const {
+//     glm::dvec3 min, max;
+//     min = {std::min(_v0[0], _v1[0]), std::min(_v0[1], _v1[1]), std::min(_v0[2], _v1[2])};
+//     min = {std::min(min[0], _v2[0]), std::min(min[1], _v2[1]), std::min(min[2], _v2[2])};
+//     min = {std::min(min[0], _v3[0]), std::min(min[1], _v3[1]), std::min(min[2], _v3[2])};
+
+//     max = {std::max(_v0[0], _v1[0]), std::max(_v0[1], _v1[1]), std::max(_v0[2], _v1[2])};
+//     max = {std::max(max[0], _v2[0]), std::max(max[1], _v2[1]), std::max(max[2], _v2[2])};
+//     max = {std::max(max[0], _v3[0]), std::max(max[1], _v3[1]), std::max(max[2], _v3[2])};
+
+//     if (min.x == max.x) { min.x -= OFFSET; max.x += OFFSET; }
+//     if (min.y == max.y) { min.y -= OFFSET; max.y += OFFSET; }
+//     if (min.z == max.z) { min.z -= OFFSET; max.z += OFFSET; }
+//     return BoundingBox(min, max);
+// };
